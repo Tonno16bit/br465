@@ -1,0 +1,46 @@
+#include <SPI.h>
+#include "printf.h"
+#include "RF24.h"
+#include <Wire.h>
+#include <Adafruit_PWMServoDriver.h>
+
+Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
+RF24 radio(7, 8);
+
+#define SERVOMIN 120  // This is the 'minimum' pulse length count (out of 4096)
+#define SERVOMAX 580  // This is the 'maximum' pulse length count (out of 4096)
+const byte address[6] = "banan";
+
+uint8_t servonum = 0;
+
+void setup() {
+  // put your setup code here, to run once:
+  pwm.begin();
+  pwm.setOscillatorFrequency(27000000);
+  pwm.setPWMFreq(60);
+  Serial.begin(9600);
+  radio.begin();
+  radio.openReadingPipe(0, address);
+  radio.setPALevel(RF24_PA_MIN);
+  radio.startListening();
+}
+
+void loop() {
+  // put your main code here, to run repeatedly:
+  if (radio.available()) {
+    //int text0 = 220;
+    int text[5];
+    radio.read(&text, sizeof(text));
+    //pwm.setPWM(0, 0, text);
+    Serial.print(text[1]);Serial.print("    ");
+    Serial.print(text[2]);Serial.print("    ");
+    Serial.print(text[3]);Serial.print("    ");
+    Serial.println(text[4]);
+    //pwm.setPWM(0, 0, text[0]);
+    pwm.setPWM(0, 0, 400);
+    pwm.setPWM(1, 0, text[1]);
+    pwm.setPWM(2, 0, text[2]);
+    pwm.setPWM(3, 0, text[3]);
+    pwm.setPWM(4, 0, text[4]);
+  }
+}
