@@ -1,0 +1,96 @@
+#include <SPI.h>
+#include "printf.h"
+#include "RF24.h"
+
+int const potPin = A0;  // analog pin used to connect the potentiometer
+int potVal;             // variable to read the value from the analog pin
+int angle;              // variable to hold the angle for the servo motor
+
+RF24 radio(7,8);
+
+const byte address[6] = "banan";
+int a=10;
+int sensorValue[5][a];
+
+void setup() {
+  // put your setup code here, to run once:
+  radio.begin();
+  radio.openWritingPipe(address);
+  radio.setPALevel(RF24_PA_MIN);
+  radio.stopListening();
+  Serial.begin(9600);
+  for(int i=0;i<a;i++){
+    for(int j=0;j<5;j++){
+      sensorValue[j][a]=300;
+    }
+  }
+}
+
+void loop() {
+  // put your main code here, to run repeatedly:
+  
+  int text[5];
+  sensorValue[0][a] = analogRead(A0);
+  sensorValue[1][a] = analogRead(A1);
+  sensorValue[2][a] = analogRead(A2);
+  sensorValue[3][a] = analogRead(A3);
+  sensorValue[4][a] = analogRead(A4);
+
+  Serial.print(sensorValue[0][a]);
+Serial.print("    ");
+  
+  if(sensorValue[0][a]<430){
+    sensorValue[0][a]=430;
+  }
+  if(sensorValue[0][a]>730){
+    sensorValue[0][a]=730;
+  }
+  //if(sensorValue[0][a]<0){ sensorValue[0][a]=0;}
+  text[0] = map(sensorValue[0][a], 430, 730, 120, 320);
+  //radio.write(&text[0], sizeof(text[0]));
+  Serial.print(text[0]);
+Serial.print("    ");
+
+  
+  sensorValue[1][a] =  sensorValue[1][a] - (sensorValue[1][a]%2+358);
+  if(sensorValue[1][a]<0){ sensorValue[1][a]=0;}
+  text[1] = map(sensorValue[1][a], 0, 665, 120, 580);
+  //radio.write(&text[1], sizeof(text[1]));
+  Serial.print(text[1]);
+Serial.print("    ");
+
+  
+  sensorValue[2][a] =  sensorValue[2][a] - (sensorValue[2][a]%2);
+  if(sensorValue[2][a]<0){ sensorValue[2][a]=0;}
+  text[2] = map(sensorValue[2][a], 0, 500, 120, 470);
+  //radio.write(&text[2], sizeof(text[2]));
+  Serial.print(text[2]);
+Serial.print("    ");
+
+  
+  sensorValue[3][a] =  sensorValue[3][a] - (sensorValue[3][a]%2+355);
+  if(sensorValue[3][a]<0){ sensorValue[3][a]=0;}
+  text[3] = map(sensorValue[3][a], 0, 668, 580, 130);
+  //radio.write(&text[3], sizeof(text[3]));
+  Serial.print(text[3]);
+  Serial.print("    ");
+
+  
+  sensorValue[4][a] =  sensorValue[4][a] - (sensorValue[4][a]%3+355);
+  if(sensorValue[4][a]<0){ sensorValue[4][a]=0;}
+  text[4] = map(sensorValue[4][a], 0, 668, 120, 580);
+  radio.write(&text, sizeof(text));
+  Serial.println(text[4]);
+  delay(1);
+
+
+
+  for(int i=0;i<a;i++){
+    for(int j=0;j<5;j++){
+      sensorValue[j][a-1]=sensorValue[j][a];
+    }
+  }
+
+
+  
+}
